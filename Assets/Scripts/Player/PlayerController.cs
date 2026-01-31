@@ -37,7 +37,11 @@ public class PlayerController : MonoBehaviour
     {
         moveInput = ctx.ReadValue<Vector2>();
         if (moveInput.x != 0)
-            sr.flipX = moveInput.x < 0;
+        {
+            float dir = Mathf.Sign(moveInput.x);
+            transform.localScale = new Vector3(dir, 1f, 1f);
+        }
+
     }
 
     public void OnJump(InputAction.CallbackContext ctx)
@@ -63,8 +67,8 @@ public class PlayerController : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.CompareTag("PigEnemy"))
-            other.GetComponent<PigEnemy>()?.TakeHit();
+        if (other.CompareTag("PigEnemy")) ;
+        //other.GetComponent<EnemyPatrol>()?.TakeHit();
 
     }
     
