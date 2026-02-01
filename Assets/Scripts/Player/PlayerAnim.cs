@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class PlayerAnim : MonoBehaviour
+public static class PlayerAnim 
 {
     public const string Idle = "player_Idle";
     public const string Run = "player_Run";
@@ -14,3 +14,4 @@ public class PlayerAnim : MonoBehaviour
     public const string DoorOut = "player_DoorOut";
     
 }
+

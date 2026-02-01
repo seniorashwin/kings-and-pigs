@@ -6,19 +6,27 @@ public class EnemyPatrol : MonoBehaviour
     public float speed = 1.5f;
     public float patrolTime = 2f;
     public float idlePauseTime = 0.6f;
-    [SerializeField] BoxCollider2D playerDetector;
-    
-    
+
+    [Header("Combat")]
+    [SerializeField] private float attackCooldown = 1.2f;
+    [SerializeField] private BoxCollider2D playerDetector;
+    [SerializeField] private Collider2D attackHitbox;
+
     Rigidbody2D rb;
     Animator anim;
     SpriteRenderer sr;
 
-    float timer;
-    int direction = -1; // -1 = left (sprite default)
+    float patrolTimer;
+    float attackTimer;
+
+    int direction = -1; // sprite faces LEFT by default
     bool isPausing;
     bool playerDetected;
     bool isAttacking;
+
     float detectorOffsetX;
+    float hitboxOffsetX;
+    
 
     void Awake()
     {
@@ -26,52 +34,61 @@ public class EnemyPatrol : MonoBehaviour
         anim = GetComponent<Animator>();
         sr = GetComponent<SpriteRenderer>();
 
-        detectorOffsetX = playerDetector.offset.x;
-
+        // store base detector offset (constant)
+        detectorOffsetX = Mathf.Abs(playerDetector.offset.x);
+        hitboxOffsetX = Mathf.Abs(((BoxCollider2D)attackHitbox).offset.x);
     }
 
     void OnEnable()
     {
-        timer = patrolTime;
+        patrolTimer = patrolTime;
+        attackTimer = 0f;
         isPausing = false;
+        isAttacking = false;
+        playerDetected = false;
+
         SetDirection(direction);
         anim.SetBool("isMoving", true);
+        anim.SetBool("isAttacking", false);
     }
 
     void FixedUpdate()
     {
-        if (isAttacking)
+        // ---------- ATTACK LOOP ----------
+        if (playerDetected && !isAttacking)
+        {
+            attackTimer -= Time.fixedDeltaTime;
+
+            if (attackTimer <= 0f)
+            {
+                StartAttack();
+                attackTimer = attackCooldown;
+            }
+        }
+
+        // ---------- HARD STOP STATES ----------
+        if (isAttacking || playerDetected || isPausing)
         {
             rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);
             return;
         }
 
-        if (playerDetected)
-        {
-            rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);
-            anim.SetBool("isMoving", false);
-            return;
-        }
-        
-        if (isPausing)
-        {
-            rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);
-            return;
-        }
-
+        // ---------- PATROL ----------
         rb.linearVelocity = new Vector2(direction * speed, rb.linearVelocity.y);
         anim.SetBool("isMoving", true);
 
-        timer -= Time.fixedDeltaTime;
-        if (timer <= 0f)
+        patrolTimer -= Time.fixedDeltaTime;
+        if (patrolTimer <= 0f)
             StartIdlePause();
     }
-
+    
+    // PATROL TURN
+    
     void StartIdlePause()
     {
         isPausing = true;
         anim.SetBool("isMoving", false);
-        rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);
+        rb.linearVelocity = Vector2.zero;
 
         Invoke(nameof(EndIdlePause), idlePauseTime);
     }
@@ -81,51 +98,66 @@ public class EnemyPatrol : MonoBehaviour
         direction *= -1;
         SetDirection(direction);
 
-        timer = patrolTime;
+        patrolTimer = patrolTime;
         isPausing = false;
         anim.SetBool("isMoving", true);
     }
+    
+    // DIRECTION + DETECTOR
 
     void SetDirection(int dir)
     {
-        // Sprite faces LEFT by default
-        // Moving right → flipX true
+        // visual flip
         sr.flipX = dir > 0;
-        
-        //move detector to face movement direction
-        Vector2 offset = playerDetector.offset;
-        offset.x = Mathf.Abs(detectorOffsetX) * dir;
-        playerDetector.offset = offset;
+
+        // detector flip
+        Vector2 detectorOffset = playerDetector.offset;
+        detectorOffset.x = detectorOffsetX * dir;
+        playerDetector.offset = detectorOffset;
+
+        // attack hitbox flip
+        BoxCollider2D hitbox = (BoxCollider2D)attackHitbox;
+        Vector2 hitboxOffset = hitbox.offset;
+        hitboxOffset.x = hitboxOffsetX * dir;
+        hitbox.offset = hitboxOffset;
     }
 
+    
+    // ATTACK
     void StartAttack()
     {
         isAttacking = true;
         anim.SetBool("isAttacking", true);
         anim.SetBool("isMoving", false);
+
+        // hard restart attack animation (guarantees replay)
+        anim.Play("pig_Attack", 0, 0f);
     }
 
+    // Animation Event (LAST FRAME of pig_Attack)
     public void OnAttackEnd()
     {
         isAttacking = false;
         anim.SetBool("isAttacking", false);
-        
-        if(!playerDetected)
+
+        if (!playerDetected)
             anim.SetBool("isMoving", true);
     }
     
+    // DETECTOR CALLBACKS
+
     public void OnPlayerEnter()
     {
-        if (isAttacking) return;
-        
         playerDetected = true;
-        StartAttack();
-
+        attackTimer = 0f; // immediate attack
     }
 
     public void OnPlayerExit()
     {
         playerDetected = false;
     }
+    
+    public void EnableHitBox() => attackHitbox.enabled = true;
+    public void DisableHitBox() => attackHitbox.enabled = false;
     
 }

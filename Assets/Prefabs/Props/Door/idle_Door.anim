@@ -6,7 +6,7 @@ AnimationClip:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: player_Hit
+  m_Name: idle_Door
   serializedVersion: 7
   m_Legacy: 0
   m_Compressed: 0
@@ -21,9 +21,7 @@ AnimationClip:
   - serializedVersion: 2
     curve:
     - time: 0
-      value: {fileID: -4557684136233861674, guid: 0c354efe8933d79b7849d1d5d7a2c836, type: 3}
-    - time: 0.083333336
-      value: {fileID: -6048739241746539578, guid: 0c354efe8933d79b7849d1d5d7a2c836, type: 3}
+      value: {fileID: 4723107735738678597, guid: 08630baecdf25076d8101ec3bad1aff1, type: 3}
     attribute: m_Sprite
     path: 
     classID: 212
@@ -46,14 +44,13 @@ AnimationClip:
       isIntCurve: 0
       isSerializeReferenceCurve: 0
     pptrCurveMapping:
-    - {fileID: -4557684136233861674, guid: 0c354efe8933d79b7849d1d5d7a2c836, type: 3}
-    - {fileID: -6048739241746539578, guid: 0c354efe8933d79b7849d1d5d7a2c836, type: 3}
+    - {fileID: 4723107735738678597, guid: 08630baecdf25076d8101ec3bad1aff1, type: 3}
   m_AnimationClipSettings:
     serializedVersion: 2
     m_AdditiveReferencePoseClip: {fileID: 0}
     m_AdditiveReferencePoseTime: 0
     m_StartTime: 0
-    m_StopTime: 0.1
+    m_StopTime: 0.016666668
     m_OrientationOffsetY: 0
     m_Level: 0
     m_CycleOffset: 0
